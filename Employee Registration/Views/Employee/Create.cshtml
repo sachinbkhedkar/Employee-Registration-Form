@@ -1,0 +1,208 @@
+﻿@model _Employee
+<style>
+    .form-control {
+        line-height:1;
+    }
+
+    .row {
+        --bs-gutter-x: 1.5rem;
+        --bs-gutter-y: 0;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: inherit;
+        /* margin-right: 0.5px !important; */
+        /* margin-left: 0px !important; */
+    }
+
+    .mb-3 {
+        margin-bottom: 3%!important;
+    }
+
+    .col-md-9 {
+        flex: 0 0 auto;
+        width: 69%!important;
+    }
+
+    .col-md-3 {
+        flex: 0 0 auto;
+        width: 31%!important;
+    }
+    .saveBtn{
+        margin-right: 10px;
+        padding: 5px 10px;
+        font-size: 14px;
+        
+    }
+
+    .field-validation-error {
+        margin-top: -0.50rem;
+        font-size: 0.875rem;
+        position: absolute;
+        background-color: gold;
+    }
+
+     input, optgroup, select, textarea {
+        margin: 0;
+        font-family: initial;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+        .no-spinner {
+            -moz-appearance: textfield;
+            -webkit-appearance: none; 
+            appearance: none; 
+        }
+</style>
+<script>
+    $.validator.unobtrusive.parse("form");
+</script>
+
+<div class="container">
+    <form id="CreateFrom" asp-action="Create" method="post" class="needs-validation" novalidate="novalidate">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="Employee_Name" class="form-label">Employee Name</label>
+            </div>
+            <div class="col-md-9">
+                <input asp-for="Employee_Name" class="form-control" />
+                <span asp-validation-for="Employee_Name" class="text-danger"></span>
+            </div>
+        </div>
+
+        
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="Mobile_Num" class="form-label">Mobile No</label>
+            </div>
+            <div class="col-md-9">
+                <input asp-for="Mobile_Num" class="form-control no-spinner" />
+                <span asp-validation-for="Mobile_Num" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+            </div>
+            <div class="col-md-9">
+                <input asp-for="DateOfBirth" class="form-control" type="date" id="dob" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="Age" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <input asp-for="Age" class="form-control" type="number" readonly/>
+                @* <span asp-validation-for="Age" class="text-danger"></span> *@
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="AddressLine1" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <textarea asp-for="AddressLine1" class="form-control"></textarea>
+                <span asp-validation-for="AddressLine1" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="AddressLine2" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <textarea asp-for="AddressLine2" class="form-control"></textarea>
+                <span  class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="Pincode" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <input asp-for="Pincode" class="form-control" />
+                <span asp-validation-for="Pincode" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="Country" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <select asp-for="Country" asp-items="@(new SelectList(ViewBag.CountryList, "Value", "Text"))" class="form-control" onchange="OnChangeCountry()">
+                    <option value="">-- Select Country --</option>
+                  
+                </select>
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label asp-for="State" class="form-label"></label>
+            </div>
+            <div class="col-md-9">
+                <select asp-for="State" id="State" class="form-control">
+                    <option value="">-- Select State --</option>
+                </select>
+                <span asp-validation-for="State" class="text-danger"></span>
+            </div>
+        </div>
+
+     
+
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <button type="submit" class=" btn btn-primary saveBtn" >Save</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(document).ready(function(e){
+
+    })
+    function OnChangeCountry(){
+        $("#State").empty();
+        var stateSelect = document.getElementById("State");
+        stateSelect.innerHTML = '<option value="">-- Select State --</option>'; 
+
+        $.ajax({
+            url: "../Employee/GetStateList",
+            type: "GET",
+            data: { ID: $('#Country').val() },
+            success: function (response) {
+                debugger;
+                if (response.length > 0) {
+                    response.forEach(function (state) {
+                        var option = document.createElement("option");
+                        option.value = state.value; 
+                        option.text = state.text; 
+                        stateSelect.appendChild(option);
+                    });
+                }
+
+            }
+          
+        });
+    }
+    document.getElementById('dob').addEventListener('change', function () {
+        const dob = new Date(this.value);
+        const today = new Date();
+
+        if (dob) {
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            document.querySelector('input[name="Age"]').value = age >= 0 ? age : '';
+        }
+    });
+</script>

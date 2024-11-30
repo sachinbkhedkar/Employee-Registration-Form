@@ -1,0 +1,169 @@
+﻿@{
+    ViewData["Title"] = "Employees";
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<style>
+    .toolbar-button {
+        margin-right: 10px;
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+
+    #toolbar {
+        margin-bottom: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+        #toolbar button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+    .tabulator {
+        background-color: white;
+    }
+
+    .tabulator-selected {
+        background-color:blueviolet !important;
+        color: black; 
+    }
+
+    .modal-header {
+        padding: 0.5rem 1rem!important;
+    }
+</style>
+@* <button class="btn btn-primary" href="../Empoyee/Create">Create</button> *@
+<div id="toolbar">
+    <button id="addButton" class="btn btn-success">Add</button>
+    <button id="editButton" class="btn btn-primary">Edit</button>
+    <button id="deleteButton" class="btn btn-danger">Delete</button>
+</div>
+<div id="employeeGrid"></div>
+@* <table id="employeeTable" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Mobile Number</th>
+            <th>Date of Birth</th>
+            <th>Address</th>
+            <th>Pincode</th>
+            <th>State</th>
+            <th>Country</th>
+        </tr>
+    </thead>
+</table>
+ *@
+<div class="modal fade" id="AddEditModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modelTitle">Modal title</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height:auto;">
+                <div id="partial"></div>
+            </div>
+            <div class="modal-footer" style="display:none;">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var grid;
+
+    $(document).ready(function () {
+     
+
+         grid = new Tabulator("#employeeGrid", {
+            ajaxURL: "../Employee/GetEmployees", 
+            ajaxConfig: "GET", 
+            layout: "fitColumns", 
+            pagination: "local", 
+            paginationSize: 5,
+            selectableRows:1,
+            rowSelectionChanged: function (data, rows) {
+                console.log(data);
+                console.log(rows.filter(row => row.getData().selected === false));
+               
+            },
+ 
+            ajaxResponse: function (url, params, response) {
+                console.log(response); 
+                return response; 
+            },
+            columns: [ // Define table columns
+                { title: "ID", field: "employee_Id", sorter: "number" },
+                { title: "Name", field: "employee_Name", sorter: "string" },
+                { title: "Age", field: "age", sorter: "number" },
+                { title: "Mobile No", field: "mobile_Num", sorter: "number" }
+            ],
+            height: "400px" // Optional: Set a fixed height for the table
+        });
+
+     
+ 
+    });
+    $("#addButton").click(function (e) {
+        var route = "@Url.Action("Create", "Employee")";
+        $("#modelTitle").text("Add Employee");
+        $("#AddEditModel").modal("show");
+        $("#partial").load(route);
+        $('#AddEditModel').on('shown.bs.modal', function (e) {
+            $.validator.unobtrusive.parse($('form'));
+
+        });
+    })
+    $("#editButton").click(function (e) {
+       var selectedRow= grid.getSelectedData();
+        if (selectedRow.length > 0) {
+            debugger;
+            var route = "../Employee/Edit?ID=" + selectedRow[0].employee_Id;
+           // var route = "@Url.Action("Edit", "Employee")";
+            $("#modelTitle").text("Edit Employee");
+            $("#AddEditModel").modal("show");
+            $("#partial").load(route);
+            $('#AddEditModel').on('shown.bs.modal', function (e) {
+                $.validator.unobtrusive.parse($('form'));
+
+            });
+        }else{
+            alert("Please select row to edit.")
+        }
+    })
+       $("#deleteButton").click(function (e) {
+       var selectedRow= grid.getSelectedData();
+        if (selectedRow.length > 0) {
+
+           if(confirm("Are you sure you want to proceed?")){
+    
+               $.ajax({
+                     url: "../Employee/Delete",
+                     type: "POST",
+                     data: { ID: selectedRow[0].employee_Id },
+                     success: function (response) {
+                        
+                            showToast("Success Message", "success");
+                     }
+          
+                 });
+           }
+          
+        }
+        else{
+            alert("Please select row to edit.")
+        }
+    })
+    function AddSubmitForm(){
+        if ($("#CreateFrom").valid()) {
+            debugger;
+        }
+    }
+
+</script>
